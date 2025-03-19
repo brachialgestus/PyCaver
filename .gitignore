@@ -1,3 +1,6 @@
 *.zip
+*.png
 caver_3.0/
 example/
+tests/
+__pycache__/

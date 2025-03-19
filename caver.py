@@ -175,6 +175,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--pdb_wise', help='PDB-wise mode', action='store_true')
 
+    parser.add_argument('-G', '--graph', help='Generate a graph of the tunnel', action='store_true')
+
     #################################### caver options ####################################
     parser.add_argument('--probe_radius',type=float, help='Probe radius', default=0.9)
     parser.add_argument('--shell_radius',type=float, help='Shell radius', default=3.0)
