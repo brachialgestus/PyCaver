@@ -8,122 +8,86 @@ import shlex
 
 CONFIG_SAMPLE = """
 #*****************************
-# CALCULATION SETUP      
+# CALCULATION SETUP
 #*****************************
 load_tunnels no
 load_cluster_tree no
 stop_after never
-
 #*****************************
-# INPUT DATA       
+# INPUT DATA
 #*****************************
 time_sparsity 1
 first_frame 1
 last_frame 100000
-
-#*****************************
-# TUNNEL CALCULATION
-#*****************************
-
-#starting_point_atom 
-#starting_point_residue
-#starting_point_coordinates
-
-probe_radius 0.9
-shell_radius 3
-shell_depth 4 
-
-
 #*****************************
 # TUNNEL CLUSTERING
 #*****************************
 clustering average_link
 weighting_coefficient 1
 clustering_threshold 3.5
-
 exclude_start_zone 2
 exclude_end_zone 0
 min_middle_zone 5
-save_zones yes
-
-
+save_zones no
 #*****************************
 # GENERATION OF OUTPUTS
 #*****************************
 one_tunnel_in_snapshot cheapest
 max_output_clusters 999
 save_dynamics_visualization no
-
 generate_summary yes
 generate_tunnel_characteristics yes
 generate_tunnel_profiles yes
-
 generate_histograms no
 bottleneck_histogram 0.0 2.0 20
 throughput_histogram 0 1.0 10
-
 generate_bottleneck_heat_map no
 bottleneck_heat_map_range 1.0 2.0
 bottleneck_heat_map_element_size 10 10
-
-generate_profile_heat_map no
+generate_profile_heat_map yes
 profile_heat_map_resolution 0.5
 profile_heat_map_range 1.0 2.0
 profile_heat_map_element_size 20 10
-
-compute_tunnel_residues no
+compute_tunnel_residues yes
 residue_contact_distance 3.0
-
-compute_bottleneck_residues no
+compute_bottleneck_residues yes
 bottleneck_contact_distance 3.0
-
-
 #*****************************
 # ADVANCED SETTINGS
 #*****************************
-
 #-----------------------------
 # Starting point optimization
 #-----------------------------
 max_distance 3
 desired_radius 5
-
 #-----------------------------
-# Advanced tunnel calculation 
+# Advanced tunnel calculation
 #-----------------------------
 number_of_approximating_balls 12
 add_central_sphere yes
-
 max_number_of_tunnels 10000
 max_limiting_radius 100
-
 cost_function_exponent 2
-
 automatic_shell_radius no
 automatic_shell_radius_bottleneck_multiplier 2
 starting_point_protection_radius 4
-
 #-----------------------------
 # Redundant tunnels removal
 #-----------------------------
 frame_clustering yes
 frame_weighting_coefficient 1
 frame_clustering_threshold 1
-
 frame_exclude_start_zone 0
 frame_exclude_end_zone 0
 frame_min_middle_zone 5
-
 #-----------------------------
-# Averaging of tunnel ends 
+# Averaging of tunnel ends
 #-----------------------------
 average_surface_frame yes
 average_surface_global yes
-
 average_surface_smoothness_angle 10
 average_surface_point_min_angle 5
 average_surface_tunnel_sampling_step 0.5
-
 #-----------------------------
 # Approximate clustering
 #-----------------------------
@@ -131,27 +95,22 @@ do_approximate_clustering no
 cluster_by_hierarchical_clustering 20000
 max_training_clusters 15
 generate_unclassified_cluster no
-
 #-----------------------------
 # Outputs
 #-----------------------------
 profile_tunnel_sampling_step 0.5
 visualization_tunnel_sampling_step 1
-
 visualize_tunnels_per_cluster 5000
 visualization_subsampling random
-
 compute_errors no
 save_error_profiles no
-
-path_to_vmd "C:/Program Files/University of Illinois/VMD/vmd.exe" 
+path_to_vmd "C:/Program Files/University of Illinois/VMD/vmd.exe"
 generate_trajectory no
-
 #-----------------------------
 # Others
 #-----------------------------
 swap yes
-seed 1    #no deafult, if missing, the seed is random
+seed 1
 """
 
 def caver_input_complete(caver_folder : str) -> bool:
@@ -173,30 +132,36 @@ def caver_input_complete(caver_folder : str) -> bool:
         return False
     return True
 
-def create_configuration() -> str:
+def create_configuration(probe_radius : float, shell_radius : float, shell_depth : float, starting_point_coordinates : tuple) -> str:
     """
     Create a configuration file for CAVER
     """
+    starting_point_coordinates = " ".join([str(x) for x in starting_point_coordinates])
     res = CONFIG_SAMPLE + "\n"
-    res += "starting_point_coordinates 0 0 0\n"
+    res += f"""
+            #*****************************
+            # TUNNEL CALCULATION
+            #*****************************
+            probe_radius {probe_radius}
+            shell_radius {shell_radius}
+            shell_depth {shell_depth}
+
+            starting_point_coordinates {starting_point_coordinates}
+            """
     return res
 
 def execute_caver(heapSize : int, caver_lib : str, caver_jar : str, caver_folder : str, pdb_folder : str, config : str, output_folder : str):
     """
-    use subprocess to 
-    java -Xmx4000m -cp $lib_path -jar $caver_jar -home $caver_folder -pdb $pdb_folder -conf "$output_folder/config.txt" -out $output_folder
+    use subprocess to run caver
     """
-    #subprocess.run(["ls", "-l"], shell=True)
     cmd = ["java", f"-Xmx{heapSize}m", "-cp", caver_lib, "-jar", caver_jar, "-home", caver_folder, "-pdb", pdb_folder, "-conf", config, "-out", output_folder]
-    #cmd = shlex.join(cmd)
-    print(cmd)
-    
-    
+    subprocess.run(cmd, capture_output=True, text=True)
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    print("Output:", result.stdout)
-
+def list_of_floats(arg):
+    try:
+        return [float(x) for x in arg.split(',')]
+    except:
+        raise argparse.ArgumentTypeError("Coordinates must be a list of floats separated by commas")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='PyCaver: A Python-wrapper for CAVER, a software tool for the analysis and visualization of tunnels and channels in protein structures.')
@@ -211,7 +176,10 @@ if __name__ == '__main__':
     parser.add_argument('--pdb_wise', help='PDB-wise mode', action='store_true')
 
     #################################### caver options ####################################
-
+    parser.add_argument('--probe_radius',type=float, help='Probe radius', default=0.9)
+    parser.add_argument('--shell_radius',type=float, help='Shell radius', default=3.0)
+    parser.add_argument('--shell_depth',type=float, help='Shell depth', default=4.0)
+    parser.add_argument('--starting_point_coordinates', type=list_of_floats, help='Starting point coordinates', default=(0, 0, 0))
     #################################### caver options ####################################
 
     args = parser.parse_args()
@@ -297,19 +265,14 @@ if __name__ == '__main__':
         # create config file
         config_file = os.path.join(name_folder, "config.txt")
         with open(config_file, "w") as file:
-            config = create_configuration()
+            config = create_configuration(probe_radius=args.probe_radius, shell_radius=args.shell_radius, shell_depth=args.shell_depth, starting_point_coordinates=args.starting_point_coordinates)
             file.write(config)
 
         # run caver
         print(f"Running CAVER on {pdb_file_name}")
         execute_caver(heapSize=args.heapSize, caver_lib=caver_lib, caver_jar=caver_jar, caver_folder=args.caver, pdb_folder=in_folder, config=config_file, output_folder=args.output)
-        pass
-
-
 
     else:
         print("Error: The specified input is neither a file nor a directory")
         exit()
     
-
-    #execute_caver(heapSize=args.heapSize, caver_jar="args.caver", caver_folder="args.caver", pdb_folder="args.input", output_folder="args.output")
