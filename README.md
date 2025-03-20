@@ -5,7 +5,7 @@
 [/] custom config!!!
 [X] log file option
 [ ] verbose option
-[ ] graph option
+[X] graph option
 [ ] multifile
 [ ] pdb wise in folder
 

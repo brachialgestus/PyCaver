@@ -1,5 +1,8 @@
 *.zip
 *.png
+*.csv
+*.html
+*.json
 caver_3.0/
 example/
 tests/

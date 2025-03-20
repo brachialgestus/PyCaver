@@ -22,3 +22,6 @@ class TunnelPoint:
     
     def __hash__(self):
         return hash((self.x, self.y, self.z, self.radius))
+    
+    def to_dict(self):
+        return {"x": self.x, "y": self.y, "z": self.z, "radius": self.radius}
