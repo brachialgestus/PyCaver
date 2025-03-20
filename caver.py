@@ -16,8 +16,6 @@ from TunnelPoint import TunnelPoint
 from MetaTunnel import MetaTunnel
 from TunnelUtils import TunnelUtils
 
-
-
 import shlex
 
 CONFIG_SAMPLE = """

@@ -1,5 +1,6 @@
 # PyCaver
 
+`python caver.py -i example/input/5mdl.pdb -o example/output/ -t example/tmp --starting_point_coordinates 0,0,0 --probe_radius 1.0 -G`
 
 # TODOs
 [/] custom config!!!
@@ -9,6 +10,7 @@
 [ ] bottleneckdiagram
 [ ] multifile
 [ ] pdb wise in folder
+[ ] create ./install.sh
 
 ## Graph Option -G
 The resulting Tunnels are merged and saved into a meta-tunnel graph which starts a the root node (the starting point of the calculation). The leaves are therefore the surface connections.

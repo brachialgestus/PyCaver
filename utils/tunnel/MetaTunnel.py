@@ -24,6 +24,32 @@ class MetaTunnel:
     def __str__(self):
         return f"Meta Tunnel, root: {self.root}"
     
+
+    def get_bottleneck_value(self):
+        """
+        return smallest radius of the tunnel
+        """
+        return min([node.radius for node in self.graph.nodes()])
+    
+    def get_largest_bottleneck(self):
+        """
+        calculate the leaves and then the smalles radius for each path from root to leaf
+        afterwards return the largest bottleneck
+        """
+        leaves = [node for node, degree in self.graph.degree() if degree == 1]
+        leaves.remove(self.root)
+        bottlenecks = []
+        for leaf in leaves:
+            path = nx.shortest_path(self.graph, source=self.root, target=leaf)
+            bottleneck = min([node.radius for node in path])
+            bottlenecks.append(bottleneck)
+        return max(bottlenecks)
+    
+    def get_amount_of_leaves(self):
+        leaves = [node for node, degree in self.graph.degree() if degree == 1]
+        leaves.remove(self.root)
+        return len(leaves)
+
     def write_to_json(self, filename : str = "meta_tunnel.json"):
         data = nx.node_link_data(self.graph, edges="links")
         meta_data = {
