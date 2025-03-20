@@ -1,13 +1,5 @@
 import os
 
-"""
-tunnel_profiles.csv has 7 rows for each tunnel
-X, Y, Z, distance, length, R, Upper limit of R overestimation
-
-Header:
-Snapshot, Tunnel cluster, Tunnel, Throughput, Cost, Bottleneck radius, Average R error bound, Max. R error bound, Bottleneck R error bound, Curvature, Length, , Axis, Values...
-"""
-
 def parse_tunnel_profiles(path : str) -> dict:
     """
     Parse the tunnel profiles from the tunnel_profiles.json file.

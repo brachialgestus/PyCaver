@@ -1,5 +1,5 @@
 import networkx as nx
-import TunnelPoint
+from TunnelPoint import TunnelPoint
 
 class Tunnel:
     def __init__(self, name):
@@ -13,7 +13,7 @@ class Tunnel:
         self.graph.add_node(TunnelPoint)
         self.last = TunnelPoint
 
-    def add_TunnelPoint(self, TunnelPoint):
+    def add_TunnelPoint(self, TunnelPoint : TunnelPoint):
         self.graph.add_node(TunnelPoint)
         self.graph.add_edge(self.last, TunnelPoint)
         self.last = TunnelPoint
