@@ -6,6 +6,7 @@
 [X] log file option
 [ ] verbose option
 [X] graph option
+[ ] bottleneckdiagram
 [ ] multifile
 [ ] pdb wise in folder
 

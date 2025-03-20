@@ -1,8 +1,22 @@
+
 import argparse
 import os
+
 import subprocess
 import uuid
 import shutil
+import sys
+
+sys.path.append('./utils/parser')
+import tunnel_profile_parser
+
+sys.path.append('./utils/tunnel')
+from Tunnel import Tunnel
+from TunnelPoint import TunnelPoint
+from MetaTunnel import MetaTunnel
+from TunnelUtils import TunnelUtils
+
+
 
 import shlex
 
@@ -273,6 +287,37 @@ if __name__ == '__main__':
         # run caver
         print(f"Running CAVER on {pdb_file_name}")
         execute_caver(heapSize=args.heapSize, caver_lib=caver_lib, caver_jar=caver_jar, caver_folder=args.caver, pdb_folder=in_folder, config=config_file, output_folder=args.output)
+
+        # create graph representation
+        if args.graph:
+            # create path to tunnel_profiles.csv
+            tunnel_profiles = os.path.join(args.output, "analysis", "tunnel_profiles.csv")
+            # check if the path exists
+            if os.path.isfile(tunnel_profiles):
+                tunnel_profile_data = tunnel_profile_parser.parse_tunnel_profiles(tunnel_profiles)
+
+                tunnel_obj = []
+
+                for t in tunnel_profile_data.keys():
+                    tunnel = Tunnel(t)
+                    tunnel.add_root(TunnelPoint(tunnel_profile_data[t]["x"][0], tunnel_profile_data[t]["y"][0], tunnel_profile_data[t]["z"][0], tunnel_profile_data[t]["r"][0]))
+                    for i in range(1,len(tunnel_profile_data[t]["x"])):
+                        tunnel.add_TunnelPoint(TunnelPoint(tunnel_profile_data[t]["x"][i], tunnel_profile_data[t]["y"][i], tunnel_profile_data[t]["z"][i], tunnel_profile_data[t]["r"][i]))
+                    tunnel_obj.append(tunnel)
+
+                m = MetaTunnel()
+
+                m.add_first(tunnel_obj[0])
+                for t in tunnel_obj[1:]:
+                    m = TunnelUtils.merge(tunnel=t, meta_tunnel=m)
+
+                m.iplot(os.path.join(args.output, "tunnel.html"))
+                m.write_to_json(os.path.join(args.output, "meta-tunnel.json"))
+
+            else:
+                print("Error: The tunnel_profiles.csv file does not exist")
+                exit()
+            pass
 
     else:
         print("Error: The specified input is neither a file nor a directory")
